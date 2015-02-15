@@ -1,0 +1,25 @@
+div.one{
+	background-color:black  !important;
+color:white;
+margin-bottom: 30px;
+padding-left: 10px;
+font: 30pt;
+text-align: left;
+
+font-family: 'Rokkitt', serif;
+
+}
+
+
+div,a {
+	color:black;
+	background-color:;
+	border-radius: 10px;
+	text-align:left;
+	padding-left:8;
+	font-family: 'Rokkitt', serif;
+}
+img {
+	width:20%;
+}
+

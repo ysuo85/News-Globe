@@ -72,8 +72,6 @@ today = yyyy+''+mm+''+dd;
 
 			var latLng_to_addr = new google.maps.Geocoder();
 			geocoder.geocode({'location' : event_arg.latLng}, function(results, status){
-			console.log(event_lat);
-          console.log(event_lng);
           var addr_arr = results[0].address_components;
           for(i = 0;i < addr_arr.length;i++){
             for(j =0;j < addr_arr[i].types.length;j++){

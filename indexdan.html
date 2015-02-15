@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+<script src="jquery-1.11.2.min.js"></script>
+
+<script>
+//in vars
+var geoLoc1 = "arizona";
+var geoLoc2 = "new york"
+var todayDate = "20150212";
+
+
+var st = jQuery.getJSON("http://api.nytimes.com/svc/search/v2/articlesearch.json" ,"q=" + geoLoc1 + "+OR+" + geoLoc2 + "&begin_date=" + todayDate + "&api-key=18c1486a74d62e37af20c71278da38d0%3A16%3A71284990", function(){
+console.log("success");}).done(function() {
+    //console.log(st.responseText);
+	var jsonRes = st.responseText;
+    //console.log(jsonRes);
+	var Jparse = JSON.parse(jsonRes);
+    var index = 0;
+    //var found;
+    //var entry
+	console.log(Jparse.response);
+	var docs = Jparse.response.docs;
+	
+	//console.log(docs.length);
+        
+     for (var x = 0; x< docs.length; ++x)   
+     {  
+	 console.log(docs[x]);
+	     
+		 for (var y = 0; y< docs[x].keywords.length; ++y)
+		 {
+		     //console.log(docs[x].keywords[y].name);
+			 var gLocTest = docs[x].keywords[y].name;
+			 var isMajor = docs[x].keywords[y].is_major;
+			 if (gLocTest == "glocations")
+			 {
+			     console.log("Location Avail!");
+				 
+				 var webURL = docs[x].web_url;
+				 var headLine = docs[x].headline.main;
+				 var unId = docs[x]._id;
+				 console.log(webURL +" "+headLine);
+				 
+			 }
+		 
+		 }
+		 
+     }  
+	
+	
+  })
+  .fail(function() {
+    console.log( "error" );
+  })
+  .always(function() {
+    console.log( "complete" );
+  });
+  
+
+  
+
+</script>
+
+
+</head>
+
+<body>
+
+
+<p id = "food">lorem ipsum</p>
+
+</body>
+</html>
+

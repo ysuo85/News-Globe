@@ -20,6 +20,30 @@
     </script>
 
     <script type="text/javascript">
+	var today = new Date();
+var dd = today.getDate()-7;
+var mm = today.getMonth()+1; //January is 0!
+var yyyy = today.getFullYear();
+
+if(dd<10) {
+    dd='0'+dd
+} 
+
+if(mm<10) {
+    mm='0'+mm
+} 
+
+today = yyyy+''+mm+''+dd; 
+//document.write(today);
+	
+	//var city = "new york";
+	//var state = "new york state";
+	google.maps.event.addDomListener(window, 'load', initialize);
+	//in vars
+    var geoLoc1 = "new york";
+	var geoLoc2 = "new york state";
+	var todayDate = today;
+	
     function initialize() {
       var mapOptions = {
         zoom: 4,
@@ -35,34 +59,45 @@
         map: map,
         title: 'Click to zoom'
       });
-
+	  
+	  var bubbleMsg = new google.maps.InfoWindow();
+	  bubbleMsg.close();
 
       google.maps.event.addListener(marker, 'click', function() {
         map.setZoom(8);
         map.setCenter(marker.getPosition());
       });
-
+	  
       google.maps.event.addListener(map, 'click', function(event_arg){
-        var event_lat = event_arg.latLng.lat();
-        var event_lng = event_arg.latLng.lng();
-      var latLng_to_addr = new google.maps.Geocoder();
-      geocoder.geocode({'location' : event_arg.latLng}, function(results, status){
-        console.log(event_lat);
+
+			var latLng_to_addr = new google.maps.Geocoder();
+			geocoder.geocode({'location' : event_arg.latLng}, function(results, status){
+			console.log(event_lat);
           console.log(event_lng);
-          var city = "";
           var addr_arr = results[0].address_components;
           for(i = 0;i < addr_arr.length;i++){
             for(j =0;j < addr_arr[i].types.length;j++){
               if(addr_arr[i].types[j] == 'administrative_area_level_2'){
-                city = results[0].address_components[i].short_name;
-                console.log(city);
-                i = addr_arr.length-1;  
+                geoLoc1 = results[0].address_components[i].short_name;
+                console.log(geoLoc1);
               }
-            }
-          }
-        if(status == google.maps.GeocoderStatus.OK){
+			  if(addr_arr[i].types[j] == 'admistrative_area_level_1'){
+				geoLoc2 = results[0].address_components[i].short_name;
+				console.log(geoLoc2);
+			  }
+			}
+		  }
+		  if(status == google.maps.GeocoderStatus.OK){
           marker.setPosition(results[0].geometry.location);
           map.setCenter(results[0].geometry.location);
+		  var arr_cpy = getNewsData();
+		  console.log("DDDDDDD" + arr_cpy);
+		  var news_msg = "";
+		  for(i = 0;i < arr_cpy.length;i++){
+			news_msg += arr_cpy[0].URL;
+		  }
+		  bubbleMsg.setContent(arr_cpy[0].URL);
+		  bubbleMsg.open(map, marker);
         }
         else{
           alert("Geocode was not successful for the following reason: " + status);
@@ -71,28 +106,88 @@
       }); 
     }
 
-    google.maps.event.addDomListener(window, 'load', initialize);
+ 
 
-    </script>
+   
+
+
+function getNewsData(){
+	var newsData_arr = new Array();
+	var final_arr = new Array();
+	var st = jQuery.getJSON("http://api.nytimes.com/svc/search/v2/articlesearch.json" ,"q=" + geoLoc1 + "+OR+" + geoLoc2 + "&begin_date=" + todayDate + "&api-key=18c1486a74d62e37af20c71278da38d0%3A16%3A71284990", function(){
+	console.log("success");}).done(function() {
+    //console.log(st.responseText);
+	var jsonRes = st.responseText;
+    //console.log(jsonRes);
+	var Jparse = JSON.parse(jsonRes);
+    var index = 0;
+    //var found;
+    //var entry
+	console.log(Jparse.response);
+	var docs = Jparse.response.docs;
+	
+	//console.log(docs.length);
+        
+     for (var x = 0; x< docs.length; ++x)   
+     {  
+	 console.log(docs[x]);
+	     
+		 for (var y = 0; y< docs[x].keywords.length; ++y)
+		 {
+		     //console.log(docs[x].keywords[y].name);
+			 var gLocTest = docs[x].keywords[y].name;
+			 var isMajor = docs[x].keywords[y].is_major;
+			 if (gLocTest == "glocations")
+			 {
+			     console.log("Location Avail!");
+				 
+				 var webURL = docs[x].web_url;
+				 var headLine = docs[x].headline.main;
+				 var unId = docs[x]._id;
+				 var newsData = {URL : webURL, hLine : headLine, UNid : unId};
+				 newsData_arr.push(newsData);
+				 console.log(webURL +" "+headLine);
+				 
+				 
+			 }
+		 
+		 }
+		 
+     }  
+	
+	for(i = 0;i < newsData_arr.length;i++){
+		count = 0;
+		for(j = i;j < newsData_arr.length;j++){
+			if(newsData_arr[i].UNid != newsData_arr[j].UNid && count == 0){
+				final_arr.push(newsData_arr[i]);
+				final_arr.push(newsData_arr[j]);
+				count++;
+			}
+		}
+
+	}
+	console.log(final_arr);
+	return final_arr;
+	
+	
+  })
+  .fail(function() {
+    console.log( "error" );
+  })
+  .always(function() {
+    console.log( "complete" );
+  });
+  return final_arr;
+}
+
+  
+</script>
+
 </head>
 <! This is the end of the copy pasta until noted>
 <body>
 
-<script>var today = new Date();
-var dd = today.getDate();
-var mm = today.getMonth()+1; //January is 0!
-var yyyy = today.getFullYear();
-
-if(dd<10) {
-    dd='0'+dd
-} 
-
-if(mm<10) {
-    mm='0'+mm
-} 
-
-today = yyyy+''+mm+''+dd; 
-//document.write(today);</script>
+<script></script>
 
 
 

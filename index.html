@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style type="text/css">
+      html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
+    </style>
+    <script src="jquery-1.11.2.min.js"></script>
+    <script type="text/javascript"
+      src="https://maps.googleapis.com/maps/api/js?libraries=places?key=AIzaSyAJncQnjRlYf37WfbAdVRcLS35vNGXqGZM">
+    </script>
+    <script type="text/javascript">
+/*      function initialize() {
+        var mapOptions = {
+          center: { lat: -34.397, lng: 150.644},
+          zoom: 8
+        };
+        var map = new google.maps.Map(document.getElementById('map-canvas'),
+            mapOptions);
+      }
+      google.maps.event.addDomListener(window, 'load', initialize);
+*/
+
+	$.getJSON( "test.json", function( data ) {
+  		var items = [];
+  		$.each( data, function( key, val ) {
+    		items.push( "<li id='" + key + "'>" + val + "</li>" );
+  		});
+ 
+  		$( "<ul/>", {
+    		"class": "my-new-list",
+    		html: items.join( "" )
+  		}).appendTo( "body" );
+	});
+
+    </script>
+  </head>
+  <body>
+<div id="map-canvas"></div>
+  </body>
+</html>

@@ -1,40 +1,111 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <style type="text/css">
-      html, body, #map-canvas { height: 100%; margin: 0; padding: 0;}
+<head>
+<link rel="stylesheet" href="free.css">
+<link href='http://fonts.googleapis.com/css?family=Rokkitt' rel='stylesheet' type='text/css'>
+
+<div class="one"><b>Global News</b></div>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+
+<! The following until otherwie noted is copypasta'd as a demo. The below causes a google maps little window thing to be. The plan is to replace the below w/ actual custom maps we dev with the program>
+<style>
+
+      #map-canvas {
+        width: 370px;
+        height: 520px;
+      }
     </style>
+
     <script src="jquery-1.11.2.min.js"></script>
     <script type="text/javascript"
       src="https://maps.googleapis.com/maps/api/js?libraries=places?key=AIzaSyAJncQnjRlYf37WfbAdVRcLS35vNGXqGZM">
     </script>
-    <script type="text/javascript">
-/*      function initialize() {
-        var mapOptions = {
-          center: { lat: -34.397, lng: 150.644},
-          zoom: 8
-        };
-        var map = new google.maps.Map(document.getElementById('map-canvas'),
-            mapOptions);
-      }
-      google.maps.event.addDomListener(window, 'load', initialize);
-*/
 
-	$.getJSON( "test.json", function( data ) {
-  		var items = [];
-  		$.each( data, function( key, val ) {
-    		items.push( "<li id='" + key + "'>" + val + "</li>" );
-  		});
- 
-  		$( "<ul/>", {
-    		"class": "my-new-list",
-    		html: items.join( "" )
-  		}).appendTo( "body" );
-	});
+    <script type="text/javascript">
+    function initialize() {
+      var mapOptions = {
+        zoom: 4,
+        center: new google.maps.LatLng( 40.713955826286046, -74.1357421875)
+      };
+
+      var geocoder = new google.maps.Geocoder();
+      var map = new google.maps.Map(document.getElementById('map-canvas'),
+          mapOptions);
+
+      var marker = new google.maps.Marker({
+        position: map.getCenter(),
+        map: map,
+        title: 'Click to zoom'
+      });
+
+
+      google.maps.event.addListener(marker, 'click', function() {
+        map.setZoom(8);
+        map.setCenter(marker.getPosition());
+      });
+
+      google.maps.event.addListener(map, 'click', function(event_arg){
+        var event_lat = event_arg.latLng.lat();
+        var event_lng = event_arg.latLng.lng();
+      var latLng_to_addr = new google.maps.Geocoder();
+      geocoder.geocode({'location' : event_arg.latLng}, function(results, status){
+        console.log(event_lat);
+          console.log(event_lng);
+          var city = "";
+          var addr_arr = results[0].address_components;
+          for(i = 0;i < addr_arr.length;i++){
+            for(j =0;j < addr_arr[i].types.length;j++){
+              if(addr_arr[i].types[j] == 'administrative_area_level_2'){
+                city = results[0].address_components[i].short_name;
+                console.log(city);
+                i = addr_arr.length-1;  
+              }
+            }
+          }
+        if(status == google.maps.GeocoderStatus.OK){
+          marker.setPosition(results[0].geometry.location);
+          map.setCenter(results[0].geometry.location);
+        }
+        else{
+          alert("Geocode was not successful for the following reason: " + status);
+        }
+      });
+      }); 
+    }
+
+    google.maps.event.addDomListener(window, 'load', initialize);
 
     </script>
-  </head>
-  <body>
+</head>
+<! This is the end of the copy pasta until noted>
+<body>
+
+<script>var today = new Date();
+var dd = today.getDate();
+var mm = today.getMonth()+1; //January is 0!
+var yyyy = today.getFullYear();
+
+if(dd<10) {
+    dd='0'+dd
+} 
+
+if(mm<10) {
+    mm='0'+mm
+} 
+
+today = yyyy+''+mm+''+dd; 
+//document.write(today);</script>
+
+
+
+<body style="background-color:lightseagreen">
+
+
+<br>
+<! Copy pasta follows>
 <div id="map-canvas"></div>
-  </body>
+<! end copy pasta>
+</body>
+<footer>
+<div class="three"><i>Ipsum Lorem</i></div>
+
+</footer>
 </html>

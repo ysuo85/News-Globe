@@ -1,0 +1,31 @@
+div.one{
+	background-color:black  !important;
+color:white;
+margin-bottom: 5px;
+padding-left: px;
+font-size: 30;
+text-align: left;
+
+font-family: 'Rokkitt', serif;
+
+}
+
+
+div,a {
+	color:black;
+	background-color:;
+	border-radius: 10px;
+	text-align:left;
+	padding-left:8;
+	font-family: 'Rokkitt', serif;
+	font-size:20;
+}
+
+
+
+div.three {
+	background-color:black;
+	margin-top:15px;
+	font-size:15;
+	color:lightseagreen;
+}

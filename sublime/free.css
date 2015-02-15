@@ -1,9 +1,9 @@
 div.one{
 	background-color:black  !important;
 color:white;
-margin-bottom: 30px;
-padding-left: 10px;
-font: 30pt;
+margin-bottom: 10px;
+padding-left: px;
+font-size: 30;
 text-align: left;
 
 font-family: 'Rokkitt', serif;
@@ -18,8 +18,14 @@ div,a {
 	text-align:left;
 	padding-left:8;
 	font-family: 'Rokkitt', serif;
-}
-img {
-	width:20%;
+	font-size:20;
 }
 
+
+
+div.three {
+	background-color:black;
+	margin-top:15px;
+	font-size:15;
+	color:lightseagreen;
+}

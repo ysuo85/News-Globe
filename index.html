@@ -7,175 +7,169 @@
 
 <! The following until otherwie noted is copypasta'd as a demo. The below causes a google maps little window thing to be. The plan is to replace the below w/ actual custom maps we dev with the program>
 <style>
-
-      #map-canvas {
+	#map-canvas {
         width: 370px;
         height: 520px;
-      }
-    </style>
+    }
+</style>
 
-    <script src="jquery-1.11.2.min.js"></script>
-    <script type="text/javascript"
-      src="https://maps.googleapis.com/maps/api/js?libraries=places?key=AIzaSyAJncQnjRlYf37WfbAdVRcLS35vNGXqGZM">
-    </script>
+<script src="jquery-1.11.2.min.js"></script>
+<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?libraries=places?key=AIzaSyAJncQnjRlYf37WfbAdVRcLS35vNGXqGZM"></script>
 
-    <script type="text/javascript">
+<script type="text/javascript">
+	var final_arr = [];
 	var today = new Date();
-var dd = today.getDate()-7;
-var mm = today.getMonth()+1; //January is 0!
-var yyyy = today.getFullYear();
+	var dd = today.getDate();
+	var mm = today.getMonth()+1; //January is 0!
+	var yyyy = today.getFullYear();
+    
+	// Default location
+    var geoLoc1 = "new york"; // default city of starting query
+	var geoLoc2 = "new york state"; // default state of starting query
 
-if(dd<10) {
-    dd='0'+dd
-} 
+	// If date or month is less than 10, add a zero before it
+	if(dd<10) {
+    	dd='0'+dd;
+	} 
 
-if(mm<10) {
-    mm='0'+mm
-} 
+	if(mm<10) {
+    	mm='0'+mm;
+	} 
 
-today = yyyy+''+mm+''+dd; 
-//document.write(today);
+	today = yyyy+''+mm+''+dd; // Today's date according to the NYTimes API query format in string
 	
-	//var city = "new york";
-	//var state = "new york state";
+	// Load the map after all DOM elements are done loading on the HTML page
 	google.maps.event.addDomListener(window, 'load', initialize);
-	//in vars
-    var geoLoc1 = "new york";
-	var geoLoc2 = "new york state";
-	var todayDate = today;
+
+
+//	var todayDate = today;
 	
     function initialize() {
+    	// Google map initial settings
       var mapOptions = {
         zoom: 4,
-        center: new google.maps.LatLng( 40.713955826286046, -74.1357421875)
+        center: new google.maps.LatLng( 40.713955826286046, -74.1357421875) // starting point is New York
       };
 
-      var geocoder = new google.maps.Geocoder();
+      // Load the map in <div> ID map-canvas
       var map = new google.maps.Map(document.getElementById('map-canvas'),
           mapOptions);
 
+      // Load the marker at center of the map
       var marker = new google.maps.Marker({
         position: map.getCenter(),
         map: map,
         title: 'Click to zoom'
       });
 	  
+	  // Convertor between Latitude/Longitude in LatLng and address in string
+      var geocoder = new google.maps.Geocoder();
+
+	  // Information window
 	  var bubbleMsg = new google.maps.InfoWindow();
 	  bubbleMsg.close();
 
+	  // Zooms in on the map when the marker is clicked
       google.maps.event.addListener(marker, 'click', function() {
         map.setZoom(8);
         map.setCenter(marker.getPosition());
       });
 	  
-      google.maps.event.addListener(map, 'click', function(event_arg){
+	  // Obtains the coordinates of the point clicked on the map, converts it to a street address, then extracts city and state data out of it to form the NYTimes API search query
+      google.maps.event.addListener(map, 'click', function(event_arg){ // event_args is an object containing latitude and longitude information passed into the event handler when map is clicked
 
-			var latLng_to_addr = new google.maps.Geocoder();
-			geocoder.geocode({'location' : event_arg.latLng}, function(results, status){
-          var addr_arr = results[0].address_components;
-          for(i = 0;i < addr_arr.length;i++){
-            for(j =0;j < addr_arr[i].types.length;j++){
-              if(addr_arr[i].types[j] == 'administrative_area_level_2'){
-                geoLoc1 = results[0].address_components[i].short_name;
-                console.log(geoLoc1);
-              }
-			  if(addr_arr[i].types[j] == 'admistrative_area_level_1'){
-				geoLoc2 = results[0].address_components[i].short_name;
-				console.log(geoLoc2);
-			  }
-			}
-		  }
-		  if(status == google.maps.GeocoderStatus.OK){
-          marker.setPosition(results[0].geometry.location);
-          map.setCenter(results[0].geometry.location);
-		  var arr_cpy = getNewsData();
-		  console.log("DDDDDDD" + arr_cpy);
-		  var news_msg = "";
-		  for(i = 0;i < arr_cpy.length;i++){
-			news_msg += arr_cpy[0].URL;
-		  }
-		  bubbleMsg.setContent(arr_cpy[0].URL);
-		  bubbleMsg.open(map, marker);
-        }
-        else{
-          alert("Geocode was not successful for the following reason: " + status);
-        }
-      });
-      }); 
-    }
+		// Initiates a geocode request based on its location in latitude/longitude, the generated data containing address information is passed into 'results', 'status' checks for success of the call
+		geocoder.geocode({'location' : event_arg.latLng}, function(results, status){      	
+        	// if an address is processed successfully, we will send it to the NYTimes query and have it return the list of news articles
+		 	if(status == google.maps.GeocoderStatus.OK){
+          		marker.setPosition(results[0].geometry.location);
+          		map.setCenter(results[0].geometry.location);        	
 
- 
+          		var addr_arr = results[0].formatted_address;
+        		console.log(addr_arr);
 
-   
-
-
-function getNewsData(){
-	var newsData_arr = new Array();
-	var final_arr = new Array();
-	var st = jQuery.getJSON("http://api.nytimes.com/svc/search/v2/articlesearch.json" ,"q=" + geoLoc1 + "+OR+" + geoLoc2 + "&begin_date=" + todayDate + "&api-key=18c1486a74d62e37af20c71278da38d0%3A16%3A71284990", function(){
-	console.log("success");}).done(function() {
-    //console.log(st.responseText);
-	var jsonRes = st.responseText;
-    //console.log(jsonRes);
-	var Jparse = JSON.parse(jsonRes);
-    var index = 0;
-    //var found;
-    //var entry
-	console.log(Jparse.response);
-	var docs = Jparse.response.docs;
-	
-	//console.log(docs.length);
-        
-     for (var x = 0; x< docs.length; ++x)   
-     {  
-	 console.log(docs[x]);
-	     
-		 for (var y = 0; y< docs[x].keywords.length; ++y)
-		 {
-		     //console.log(docs[x].keywords[y].name);
-			 var gLocTest = docs[x].keywords[y].name;
-			 var isMajor = docs[x].keywords[y].is_major;
-			 if (gLocTest == "glocations")
-			 {
-			     console.log("Location Avail!");
-				 
-				 var webURL = docs[x].web_url;
-				 var headLine = docs[x].headline.main;
-				 var unId = docs[x]._id;
-				 var newsData = {URL : webURL, hLine : headLine, UNid : unId};
-				 newsData_arr.push(newsData);
-				 console.log(webURL +" "+headLine);
-				 
-				 
-			 }
-		 
-		 }
-		 
-     }  
-	
-	for(i = 0;i < newsData_arr.length;i++){
-		count = 0;
-		for(j = i;j < newsData_arr.length;j++){
-			if(newsData_arr[i].UNid != newsData_arr[j].UNid && count == 0){
-				final_arr.push(newsData_arr[i]);
-				final_arr.push(newsData_arr[j]);
-				count++;
-			}
-		}
-
-	}
-	console.log(final_arr);
-	return final_arr;
-	
-	
-  })
-  .fail(function() {
-    console.log( "error" );
-  })
-  .always(function() {
-    console.log( "complete" );
-  });
-  return final_arr;
+        		addr_arr = addr_arr.split(","); // all US addresses are split by 3 commas. By splitting the string into an array, we can extract the following data for the NYTimes query
+        		geoLoc1 = addr_arr[1].trim(); // the city is the second element of the array after the string is split into sections. Make sure to trim the white space for the query
+        		geoLoc2 = addr_arr[2].split(" ")[1]; // the state is a little trickier, there is a space right after the second comma, so when you split that string again to get the state, element 0 is actually empty,
+        										 // element 1 is what we actually want.
+        		console.log(geoLoc1 + ' ' + geoLoc2);
+        		
+        		// JSON call, asynchronous
+				var newsData_arr = [];
+				var st = jQuery.getJSON("http://api.nytimes.com/svc/search/v2/articlesearch.json" ,"q=" + geoLoc1 + "+OR+" + geoLoc2 + "&begin_date=" + today + "&api-key=18c1486a74d62e37af20c71278da38d0%3A16%3A71284990", function(){
+				console.log("success");}).done(function() {
+		    	//console.log(st.responseText);
+				var jsonRes = st.responseText;
+		    	//console.log(jsonRes);
+				var Jparse = JSON.parse(jsonRes);
+		    	var index = 0;
+		    	//var found;
+		    	//var entry
+				var docs = Jparse.response.docs;
+			
+				//console.log(docs.length);
+		        
+		    	for (var x = 0; x< docs.length; ++x){  
+			 		console.log(docs[x]);
+			     
+					for (var y = 0; y< docs[x].keywords.length; ++y){
+				    	//console.log(docs[x].keywords[y].name);
+						var gLocTest = docs[x].keywords[y].name;
+						var isMajor = docs[x].keywords[y].is_major;
+						if (gLocTest == "glocations"){
+					    	console.log("Location Avail!");
+							var webURL = docs[x].web_url;
+							var headLine = docs[x].headline.main;
+							var unId = docs[x]._id;
+							var newsData = {URL : webURL, hLine : headLine, UNid : unId};
+							newsData_arr.push(newsData);
+							console.log(webURL +" "+headLine);
+						}
+					}
+				}  
+			
+				for(i = 0;i < newsData_arr.length;i++){
+					var isDistinct = true;
+					if(final_arr == []){
+						final_arr.push(newsData_arr[i]);
+					}
+					else{
+						for(j = 0;j < final_arr.length;j++){
+							if(final_arr[j].UNid == newsData_arr[i].UNid){
+								isDistinct = false;
+							}
+						}
+						if(isDistinct){
+							final_arr.push(newsData_arr[i]);
+						}
+					}
+				}
+		  		var news_msg = "";
+		  		for(i = 0;i < final_arr.length;i++){
+					news_msg += "<a href='" + final_arr[i].URL + "'>" + final_arr[i].hLine + "</a><br>";
+		  		}
+		  		if(news_msg == ""){
+		  			bubbleMsg.setContent("No news found around this area.");
+		  		}
+		  		else{
+		  			bubbleMsg.setContent(news_msg);
+		  		}
+		  		bubbleMsg.open(map, marker);		  	
+				console.log(final_arr);
+				final_arr = [];
+		  		})
+		  			.fail(function() {
+		    		console.log( "error" );
+		  		})
+		  			.always(function() {
+		    		console.log( "complete" );
+		  		});
+        	}
+        	else{
+        		alert("Geocode was not successful for the following reason: " + status);
+        	}
+    	});
+    }); 
 }
 
   
@@ -198,7 +192,6 @@ function getNewsData(){
 <! end copy pasta>
 </body>
 <footer>
-<div class="three"><i>Ipsum Lorem</i></div>
 
 </footer>
 </html>
